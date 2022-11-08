@@ -1,0 +1,553 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <link rel="stylesheet" href="css/leaflet.css"><link rel="stylesheet" href="css/L.Control.Locate.min.css">
+        <link rel="stylesheet" href="css/qgis2web.css"><link rel="stylesheet" href="css/fontawesome-all.min.css">
+        <link rel="stylesheet" href="css/leaflet-control-geocoder.Geocoder.css">
+        <link rel="stylesheet" href="css/leaflet-measure.css">
+        <style>
+        html, body, #map {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+        </style>
+        <title></title>
+    </head>
+    <body>
+        <div id="map">
+        </div>
+        <script src="js/qgis2web_expressions.js"></script>
+        <script src="js/leaflet.js"></script><script src="js/L.Control.Locate.min.js"></script>
+        <script src="js/leaflet.rotatedMarker.js"></script>
+        <script src="js/leaflet.pattern.js"></script>
+        <script src="js/leaflet-hash.js"></script>
+        <script src="js/Autolinker.min.js"></script>
+        <script src="js/rbush.min.js"></script>
+        <script src="js/labelgun.min.js"></script>
+        <script src="js/labels.js"></script>
+        <script src="js/leaflet-control-geocoder.Geocoder.js"></script>
+        <script src="js/leaflet-measure.js"></script>
+        <script src="data/BarangayBoundaries_3.js"></script>
+        <script src="data/Corner_4.js"></script>
+        <script src="data/MunicipalityofBay_5.js"></script>
+        <script>
+        var highlightLayer;
+        function highlightFeature(e) {
+            highlightLayer = e.target;
+
+            if (e.target.feature.geometry.type === 'LineString') {
+              highlightLayer.setStyle({
+                color: '#ffff00',
+              });
+            } else {
+              highlightLayer.setStyle({
+                fillColor: '#ffff00',
+                fillOpacity: 1
+              });
+            }
+        }
+        var map = L.map('map', {
+            zoomControl:true, maxZoom:28, minZoom:1
+        })
+        var hash = new L.Hash(map);
+        map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
+        var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
+        L.control.locate({locateOptions: {maxZoom: 19}}).addTo(map);
+        var measureControl = new L.Control.Measure({
+            position: 'topleft',
+            primaryLengthUnit: 'meters',
+            secondaryLengthUnit: 'kilometers',
+            primaryAreaUnit: 'sqmeters',
+            secondaryAreaUnit: 'hectares'
+        });
+        measureControl.addTo(map);
+        document.getElementsByClassName('leaflet-control-measure-toggle')[0]
+        .innerHTML = '';
+        document.getElementsByClassName('leaflet-control-measure-toggle')[0]
+        .className += ' fas fa-ruler';
+        var bounds_group = new L.featureGroup([]);
+        function setBounds() {
+            if (bounds_group.getLayers().length) {
+                map.fitBounds(bounds_group.getBounds());
+            }
+        }
+        map.createPane('pane_GoogleTerrain_0');
+        map.getPane('pane_GoogleTerrain_0').style.zIndex = 400;
+        var layer_GoogleTerrain_0 = L.tileLayer('https://mt1.google.com/vt/lyrs=p&x={x}&y={y}&z={z}', {
+            pane: 'pane_GoogleTerrain_0',
+            opacity: 1.0,
+            attribution: '<a href="https://www.google.at/permissions/geoguidelines/attr-guide.html">Map data ©2015 Google</a>',
+            minZoom: 1,
+            maxZoom: 28,
+            minNativeZoom: 0,
+            maxNativeZoom: 20
+        });
+        layer_GoogleTerrain_0;
+        map.addLayer(layer_GoogleTerrain_0);
+        map.createPane('pane_OSMStandard_1');
+        map.getPane('pane_OSMStandard_1').style.zIndex = 401;
+        var layer_OSMStandard_1 = L.tileLayer('http://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            pane: 'pane_OSMStandard_1',
+            opacity: 1.0,
+            attribution: '<a href="https://www.openstreetmap.org/copyright">© OpenStreetMap contributors, CC-BY-SA</a>',
+            minZoom: 1,
+            maxZoom: 28,
+            minNativeZoom: 0,
+            maxNativeZoom: 19
+        });
+        layer_OSMStandard_1;
+        map.addLayer(layer_OSMStandard_1);
+        map.createPane('pane_GoogleHybrid_2');
+        map.getPane('pane_GoogleHybrid_2').style.zIndex = 402;
+        var layer_GoogleHybrid_2 = L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+            pane: 'pane_GoogleHybrid_2',
+            opacity: 1.0,
+            attribution: '<a href="https://www.google.at/permissions/geoguidelines/attr-guide.html">Map data ©2015 Google</a>',
+            minZoom: 1,
+            maxZoom: 28,
+            minNativeZoom: 0,
+            maxNativeZoom: 20
+        });
+        layer_GoogleHybrid_2;
+        map.addLayer(layer_GoogleHybrid_2);
+        function pop_BarangayBoundaries_3(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (i in e.target._eventParents) {
+                        e.target._eventParents[i].resetStyle(e.target);
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">Barangay</th>\
+                        <td>' + (feature.properties['Barangay'] !== null ? autolinker.link(feature.properties['Barangay'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Area</th>\
+                        <td>' + (feature.properties['Area'] !== null ? autolinker.link(feature.properties['Area'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+        }
+
+        function style_BarangayBoundaries_3_0(feature) {
+            switch(String(feature.properties['Barangay'])) {
+                case 'Bitin':
+                    return {
+                pane: 'pane_BarangayBoundaries_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(173,236,120,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Calo':
+                    return {
+                pane: 'pane_BarangayBoundaries_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(235,167,118,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Dila':
+                    return {
+                pane: 'pane_BarangayBoundaries_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(229,198,72,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Maitim':
+                    return {
+                pane: 'pane_BarangayBoundaries_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(218,48,105,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Masaya':
+                    return {
+                pane: 'pane_BarangayBoundaries_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(188,211,68,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Paciano Rizal':
+                    return {
+                pane: 'pane_BarangayBoundaries_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(133,193,238,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Puypuy':
+                    return {
+                pane: 'pane_BarangayBoundaries_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(52,15,217,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'San Agustin (Pob.)':
+                    return {
+                pane: 'pane_BarangayBoundaries_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(36,205,214,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'San Antonio':
+                    return {
+                pane: 'pane_BarangayBoundaries_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(25,209,12,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'San Isidro':
+                    return {
+                pane: 'pane_BarangayBoundaries_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(67,99,225,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'San Nicolas (Pob.)':
+                    return {
+                pane: 'pane_BarangayBoundaries_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(220,87,80,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Santa Cruz':
+                    return {
+                pane: 'pane_BarangayBoundaries_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(67,216,169,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Santo Domingo':
+                    return {
+                pane: 'pane_BarangayBoundaries_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(159,82,222,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Tagumpay':
+                    return {
+                pane: 'pane_BarangayBoundaries_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(18,201,73,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Tranca':
+                    return {
+                pane: 'pane_BarangayBoundaries_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(212,113,221,1.0)',
+                interactive: true,
+            }
+                    break;
+                default:
+                    return {
+                pane: 'pane_BarangayBoundaries_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(226,39,170,1.0)',
+                interactive: true,
+            }
+                    break;
+            }
+        }
+        map.createPane('pane_BarangayBoundaries_3');
+        map.getPane('pane_BarangayBoundaries_3').style.zIndex = 403;
+        map.getPane('pane_BarangayBoundaries_3').style['mix-blend-mode'] = 'normal';
+        var layer_BarangayBoundaries_3 = new L.geoJson(json_BarangayBoundaries_3, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_BarangayBoundaries_3',
+            layerName: 'layer_BarangayBoundaries_3',
+            pane: 'pane_BarangayBoundaries_3',
+            onEachFeature: pop_BarangayBoundaries_3,
+            style: style_BarangayBoundaries_3_0,
+        });
+        bounds_group.addLayer(layer_BarangayBoundaries_3);
+        map.addLayer(layer_BarangayBoundaries_3);
+        function pop_Corner_4(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (i in e.target._eventParents) {
+                        e.target._eventParents[i].resetStyle(e.target);
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">Corner</th>\
+                        <td>' + (feature.properties['Corner'] !== null ? autolinker.link(feature.properties['Corner'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+        }
+
+        function style_Corner_4_0() {
+            return {
+                pane: 'pane_Corner_4',
+                radius: 5.2,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 2.0,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,255,255,1.0)',
+                interactive: true,
+            }
+        }
+        map.createPane('pane_Corner_4');
+        map.getPane('pane_Corner_4').style.zIndex = 404;
+        map.getPane('pane_Corner_4').style['mix-blend-mode'] = 'normal';
+        var layer_Corner_4 = new L.geoJson(json_Corner_4, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_Corner_4',
+            layerName: 'layer_Corner_4',
+            pane: 'pane_Corner_4',
+            onEachFeature: pop_Corner_4,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.circleMarker(latlng, style_Corner_4_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_Corner_4);
+        map.addLayer(layer_Corner_4);
+        function pop_MunicipalityofBay_5(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (i in e.target._eventParents) {
+                        e.target._eventParents[i].resetStyle(e.target);
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">admin3Name</th>\
+                        <td>' + (feature.properties['admin3Name'] !== null ? autolinker.link(feature.properties['admin3Name'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Area'] !== null ? autolinker.link(feature.properties['Area'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+        }
+
+        function style_MunicipalityofBay_5_0() {
+            return {
+                pane: 'pane_MunicipalityofBay_5',
+                opacity: 1,
+                color: 'rgba(228,26,28,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 2.0, 
+                fillOpacity: 0,
+                interactive: false,
+            }
+        }
+        map.createPane('pane_MunicipalityofBay_5');
+        map.getPane('pane_MunicipalityofBay_5').style.zIndex = 405;
+        map.getPane('pane_MunicipalityofBay_5').style['mix-blend-mode'] = 'normal';
+        var layer_MunicipalityofBay_5 = new L.geoJson(json_MunicipalityofBay_5, {
+            attribution: '',
+            interactive: false,
+            dataVar: 'json_MunicipalityofBay_5',
+            layerName: 'layer_MunicipalityofBay_5',
+            pane: 'pane_MunicipalityofBay_5',
+            onEachFeature: pop_MunicipalityofBay_5,
+            style: style_MunicipalityofBay_5_0,
+        });
+        bounds_group.addLayer(layer_MunicipalityofBay_5);
+        map.addLayer(layer_MunicipalityofBay_5);
+        var osmGeocoder = new L.Control.Geocoder({
+            collapsed: true,
+            position: 'topleft',
+            text: 'Search',
+            title: 'Testing'
+        }).addTo(map);
+        document.getElementsByClassName('leaflet-control-geocoder-icon')[0]
+        .className += ' fa fa-search';
+        document.getElementsByClassName('leaflet-control-geocoder-icon')[0]
+        .title += 'Search for a place';
+        var baseMaps = {};
+        L.control.layers(baseMaps,{'<img src="legend/MunicipalityofBay_5.png" /> Municipality of Bay': layer_MunicipalityofBay_5,'<img src="legend/Corner_4.png" /> Corner': layer_Corner_4,'Barangay Boundaries<br /><table><tr><td style="text-align: center;"><img src="legend/BarangayBoundaries_3_Bitin0.png" /></td><td>Bitin</td></tr><tr><td style="text-align: center;"><img src="legend/BarangayBoundaries_3_Calo1.png" /></td><td>Calo</td></tr><tr><td style="text-align: center;"><img src="legend/BarangayBoundaries_3_Dila2.png" /></td><td>Dila</td></tr><tr><td style="text-align: center;"><img src="legend/BarangayBoundaries_3_Maitim3.png" /></td><td>Maitim</td></tr><tr><td style="text-align: center;"><img src="legend/BarangayBoundaries_3_Masaya4.png" /></td><td>Masaya</td></tr><tr><td style="text-align: center;"><img src="legend/BarangayBoundaries_3_PacianoRizal5.png" /></td><td>Paciano Rizal</td></tr><tr><td style="text-align: center;"><img src="legend/BarangayBoundaries_3_Puypuy6.png" /></td><td>Puypuy</td></tr><tr><td style="text-align: center;"><img src="legend/BarangayBoundaries_3_SanAgustinPob7.png" /></td><td>San Agustin (Pob.)</td></tr><tr><td style="text-align: center;"><img src="legend/BarangayBoundaries_3_SanAntonio8.png" /></td><td>San Antonio</td></tr><tr><td style="text-align: center;"><img src="legend/BarangayBoundaries_3_SanIsidro9.png" /></td><td>San Isidro</td></tr><tr><td style="text-align: center;"><img src="legend/BarangayBoundaries_3_SanNicolasPob10.png" /></td><td>San Nicolas (Pob.)</td></tr><tr><td style="text-align: center;"><img src="legend/BarangayBoundaries_3_SantaCruz11.png" /></td><td>Santa Cruz</td></tr><tr><td style="text-align: center;"><img src="legend/BarangayBoundaries_3_SantoDomingo12.png" /></td><td>Santo Domingo</td></tr><tr><td style="text-align: center;"><img src="legend/BarangayBoundaries_3_Tagumpay13.png" /></td><td>Tagumpay</td></tr><tr><td style="text-align: center;"><img src="legend/BarangayBoundaries_3_Tranca14.png" /></td><td>Tranca</td></tr><tr><td style="text-align: center;"><img src="legend/BarangayBoundaries_3_15.png" /></td><td></td></tr></table>': layer_BarangayBoundaries_3,"Google Hybrid": layer_GoogleHybrid_2,"OSM Standard": layer_OSMStandard_1,"Google Terrain": layer_GoogleTerrain_0,}).addTo(map);
+        setBounds();
+        var i = 0;
+        layer_BarangayBoundaries_3.eachLayer(function(layer) {
+            var context = {
+                feature: layer.feature,
+                variables: {}
+            };
+            layer.bindTooltip((layer.feature.properties['Barangay'] !== null?String('<div style="color: #000000; font-size: 6pt; font-family: \'MS Shell Dlg 2\', sans-serif;">' + layer.feature.properties['Barangay']) + '</div>':''), {permanent: true, offset: [-0, -16], className: 'css_BarangayBoundaries_3'});
+            labels.push(layer);
+            totalMarkers += 1;
+              layer.added = true;
+              addLabel(layer, i);
+              i++;
+        });
+        var i = 0;
+        layer_Corner_4.eachLayer(function(layer) {
+            var context = {
+                feature: layer.feature,
+                variables: {}
+            };
+            layer.bindTooltip((exp_label_Corner_4_eval_expression(context) !== null?String('<div style="color: #0000ff; font-size: 7pt; font-family: \'MS Shell Dlg 2\', sans-serif;">' + exp_label_Corner_4_eval_expression(context)) + '</div>':''), {permanent: true, offset: [-0, -16], className: 'css_Corner_4'});
+            labels.push(layer);
+            totalMarkers += 1;
+              layer.added = true;
+              addLabel(layer, i);
+              i++;
+        });
+        resetLabels([layer_BarangayBoundaries_3,layer_Corner_4]);
+        map.on("zoomend", function(){
+            resetLabels([layer_BarangayBoundaries_3,layer_Corner_4]);
+        });
+        map.on("layeradd", function(){
+            resetLabels([layer_BarangayBoundaries_3,layer_Corner_4]);
+        });
+        map.on("layerremove", function(){
+            resetLabels([layer_BarangayBoundaries_3,layer_Corner_4]);
+        });
+        </script>
+    </body>
+</html>
